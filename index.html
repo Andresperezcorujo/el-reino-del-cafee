@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El Reino del Café</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      margin: 0;
+      background: url('reinodelcafe.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #4b2e1e;
+    }
+    header, footer {
+      background-color: rgba(75, 46, 30, 0.9);
+      color: white;
+      text-align: center;
+      padding: 1em;
+    }
+    header button {
+      background-color: #a6361f;
+      color: white;
+      border: none;
+      padding: 0.5em 1em;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 0.5em;
+    }
+    main {
+      max-width: 1000px;
+      margin: auto;
+      padding: 2em;
+      background-color: rgba(255, 255, 255, 0.85);
+      border-radius: 8px;
+    }
+    h2 {
+      font-size: 2em;
+      font-weight: bold;
+      margin-top: 2em;
+    }
+    .category {
+      margin-top: 2em;
+    }
+    .products {
+      display: grid;
+      gap: 1.5em;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      margin-top: 1em;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 1em;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .card img {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+    .card button {
+      background-color: #a6361f;
+      color: white;
+      border: none;
+      padding: 0.5em 1em;
+      margin-top: 0.5em;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #cart {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #cartModal {
+      background: white;
+      padding: 2em;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 90%;
+    }
+    #cartModal ul {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 1em;
+    }
+    #cartModal input,
+    #cartModal textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #cartModal button {
+      background-color: #4b2e1e;
+      color: white;
+      border: none;
+      padding: 0.5em 1em;
+      border-radius: 5px;
+      margin: 0.2em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>El Reino del Café</h1>
+    <button onclick="toggleCart()">🛒 Ver Carrito (<span id="cartCount">0</span>)</button>
+  </header>
+
+  <main>
+    <section>
+      <h2>Bienvenido al <span style="color:#a6361f">Reino del Café</span></h2>
+      <p>Somos un emprendimiento dedicado a la comercialización de café en todas sus presentaciones.</p>
+    </section>
+
+    <div class="category">
+      <h2>☕ Clásicos</h2>
+      <div class="products" id="classicProducts"></div>
+    </div>
+
+    <div class="category">
+      <h2>👑 Premium</h2>
+      <div class="products" id="premiumProducts"></div>
+    </div>
+
+    <div class="category">
+      <h2>🌟 StarB</h2>
+      <div class="products" id="starbucksProducts"></div>
+    </div>
+  </main>
+
+  <div id="cart">
+    <div id="cartModal">
+      <h3>Tu carrito</h3>
+      <ul id="cartItems"></ul>
+
+      <input type="text" id="clientName" placeholder="Tu nombre (obligatorio)" required />
+      <textarea id="clientNote" placeholder="Dirección o comentario (opcional)" rows="3"></textarea>
+
+      <button onclick="checkout()">Finalizar compra</button>
+      <button onclick="clearCart()">Vaciar carrito</button>
+      <button onclick="toggleCart()">Cerrar</button>
+    </div>
+  </div>
+
+  <footer>
+    <p> | ENVIOS A TODO EL PAÍS | Consulte por costos de envío.</p>
+  </footer>
+
+  <script>
+    const classic = [
+      { id: 1, name: "Espresso", price: 269 },
+      { id: 2, name: "Lungo", price: 269 },
+      { id: 3, name: "Cortado", price: 289 },
+      { id: 4, name: "Café au lait", price: 289 },
+      { id: 5, name: "Café au lait vanilla", price: 289 },
+      { id: 6, name: "Chococino", price: 289 },
+      { id: 7, name: "Capuccino", price: 289 },
+      { id: 8, name: "Latte Macchiato", price: 289 },
+      { id: 9, name: "Mochaccino Canela", price: 289 }
+    ];
+
+    const premium = [
+      { id: 10, name: "Sensación", price: 299 },
+      { id: 11, name: "Chococino Alpino", price: 299 },
+      { id: 12, name: "Galak", price: 299 },
+      { id: 13, name: "Capu. Dulce de leche", price: 299 },
+      { id: 14, name: "Kit Kat", price: 299 }
+    ];
+
+    const starbucks = [
+      { id: 15, name: "Caramel Macchiato", price: 329 },
+      { id: 16, name: "Latte Macchiato", price: 329 },
+      { id: 17, name: "Capuccino", price: 329 },
+      { id: 18, name: "House Blend Americano", price: 349 }
+    ];
+
+    const cart = [];
+
+    function renderProducts(products, containerId) {
+      const list = document.getElementById(containerId);
+      products.forEach(product => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="taza.png" alt="Taza de café" />
+          <h3>${product.name}</h3>
+          <p>$${product.price}</p>
+          <button onclick="addToCart(${product.id}, '${containerId}')">Agregar al carrito</button>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function addToCart(id, category) {
+      let all = [...classic, ...premium, ...starbucks];
+      const product = all.find(p => p.id === id);
+      const existing = cart.find(p => p.id === id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({ ...product, quantity: 1 });
+      }
+      updateCartCount();
+      toggleCart(true);
+      renderCart();
+    }
+
+    function updateCartCount() {
+      document.getElementById("cartCount").textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    function renderCart() {
+      const container = document.getElementById("cartItems");
+      container.innerHTML = "";
+
+      cart.forEach(item => {
+        const li = document.createElement("li");
+        li.style.display = "flex";
+        li.style.justifyContent = "space-between";
+        li.style.alignItems = "center";
+        li.style.marginBottom = "5px";
+
+        li.innerHTML = `
+          <span>${item.name} x${item.quantity}</span>
+          <button onclick="removeFromCart(${item.id})" style="background:#a6361f;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">❌</button>
+        `;
+        container.appendChild(li);
+      });
+    }
+
+    function removeFromCart(id) {
+      const index = cart.findIndex(item => item.id === id);
+      if (index !== -1) {
+        cart.splice(index, 1);
+        updateCartCount();
+        renderCart();
+      }
+    }
+
+    function clearCart() {
+      cart.length = 0;
+      updateCartCount();
+      renderCart();
+    }
+
+    function toggleCart(forceOpen = null) {
+      const cartModal = document.getElementById("cart");
+      if (forceOpen === true) {
+        cartModal.style.display = "flex";
+      } else if (forceOpen === false) {
+        cartModal.style.display = "none";
+      } else {
+        cartModal.style.display = cartModal.style.display === "flex" ? "none" : "flex";
+      }
+    }
+
+    function checkout() {
+      if (cart.length === 0) {
+        alert("Tu carrito está vacío.");
+        return;
+      }
+
+      const nombre = document.getElementById("clientName").value.trim();
+      const nota = document.getElementById("clientNote").value.trim();
+
+      if (!nombre) {
+        alert("Por favor, ingresá tu nombre antes de continuar.");
+        return;
+      }
+
+      const numeroWhatsApp = "59892892192";
+      let mensaje = "¡Hola! Quisiera hacer un pedido:\n\n";
+
+      mensaje += ` Nombre: ${nombre}\n`;
+      if (nota) mensaje += ` Nota: ${nota}\n\n`;
+
+      cart.forEach(item => {
+        mensaje += `• ${item.name} x${item.quantity} - $${item.price * item.quantity}\n`;
+      });
+
+      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      mensaje += `\n Total: $${total}\n\nGracias!`;
+
+      const encoded = encodeURIComponent(mensaje);
+      const url = `https://wa.me/${numeroWhatsApp}?text=${encoded}`;
+      window.open(url, "_blank");
+    }
+
+    renderProducts(classic, "classicProducts");
+    renderProducts(premium, "premiumProducts");
+    renderProducts(starbucks, "starbucksProducts");
+  </script>
+</body>
+</html>
